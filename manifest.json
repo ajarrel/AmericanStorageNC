@@ -1,0 +1,27 @@
+{
+	"background":{
+		"scripts": ["background.js"]
+	},
+	
+	"manifest_version": 2,
+	"name": "American Self Storage Helper",
+	"version": "0.101",
+	
+	"description": "A helpful tool for American Self Storage employees",
+	
+	"permissions": [
+		"alarms",
+		"background",
+		"clipboardRead",
+		"clipboardWrite",
+		"desktopCapture",
+		"idle",
+		"notifications",
+		"storage",
+		"http://*/*",
+		"https://*/*",
+		"tabs"
+	]
+	
+	
+}
