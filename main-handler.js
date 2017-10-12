@@ -23,11 +23,12 @@ function getRates(){
 		$.get(ratesArray[i].uri, [], function(d){
 
 			var h = $(d);
+			var wrapper = $(document.createElement('h1')).attr('id',ratesArray[i].site).text(ratesArray[i].site);
 
 			$(document.createElement('div'))
 				.addClass('cell')
 				.append(h.find(ratesArray[i].selector))
-				.prepend(ratesArray[i].site)
+				.prepend(wrapper)
 				.appendTo('#target');
 
 
