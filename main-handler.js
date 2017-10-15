@@ -11,7 +11,7 @@ var ratesArray = [
 	{ site: 'AAA', order: 7, selector: 'table#rates-chart', uri: 'https://durhamstoragesolutions.com/self-storage/durham-nc-27703' }
 ];
 
-var arr = [],deferred = [];
+var deferred = [];
 
 $(document).ready(function(){
 	
@@ -27,19 +27,27 @@ function getRates(){
 			var h = $(d);
 			var wrapper = $(document.createElement('h1')).attr('id',ratesArray[i].site).text(ratesArray[i].site);
 
-			var dom = $(document.createElement('div'))
+			ratesArray[i].dom = $(document.createElement('div'))
 				.addClass('cell')
 				.append(h.find(ratesArray[i].selector))
 				.prepend(wrapper);
-			
-			arr.push({ dom: dom, order: ratesArray[i].order });
 
 		}, 'html') );
 	});
 	
-	$.when( deferred ).done(function(){ console.log('last ajax fired'); });
+	$.when( deferred ).done(buildDom);
 }
 
-function buildDom(obj, order){
+function buildDom(){
+	var tArr = new Array(ratesArray.length), order; //tie the length of this temp array to the ratesArray
 	
+	$(ratesArray).each(function(i){
+		order = ratesArray[i].order;
+		
+		tArr[order] = ratesArray[i].dom;
+	});
+	
+	$(tArr).each(function(){
+		$(this).appendTo('#target');
+	});
 }
