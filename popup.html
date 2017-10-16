@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+<head>
+<link href="style.css" type="text/css">
+<script type="application/javascript">
+	document.getElementById('goto').addEventListener('click',function(){
+		chrome.tabs.create({ url: 'main.html', selected: true });
+	});
+</script>
+<meta charset="utf-8">
+<title>Go to Main</title>
+</head>
+
+<body>
+<button class="category" id="goto">Go to Rates Page</button>
+</body>
+</html>

@@ -5,7 +5,7 @@
 	
 	"manifest_version": 2,
 	"name": "American Self Storage Helper",
-	"version": "0.102",
+	"version": "0.103",
 	
 	"description": "A helpful tool for American Self Storage employees",
 	
@@ -21,7 +21,11 @@
 		"http://*/*",
 		"https://*/*",
 		"tabs"
-	]
+	],
 	
+	"browser_action": {
+		"default_title": "Open Rates Page",
+		"default_popup": "popup.html"
+	}
 	
 }
