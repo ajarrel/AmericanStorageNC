@@ -2,17 +2,20 @@
 /* CSS Document */
 
 div#target{
-	
+	display: flex;
+	flex-flow: row wrap;
+	justify-content: flex-start;
+	align-items: flex-start
 }
 div.cell{
 	float: left;
-	width: 460px;
-	max-height: 540px;
-	overflow: scroll;
+	overflow-y: scroll;
+	overflow-x: hidden;
+	height: 540px;
+	width: 471px;
+	border-bottom: solid 2px black;
 }
-.cell:nth-child(4n+1){
-	clear: left;
-}
+
 button{
 	border-radius: 25px;
 	padding: 10px 20px 10px 20px;
@@ -26,6 +29,10 @@ button{
 }
 
 button:hover{
+	color: firebrick;
+	border-color: firebrick;
+}
+.clicked{
 	color: firebrick;
 	border-color: firebrick;
 }
@@ -44,4 +51,9 @@ td.special-offer{
 h1{
 	text-decoration: underline;
 	text-align: center;
+}
+tr#category{
+	border-bottom: solid black 2px;
+	font-size: 13px;
+	font-weight: bold;
 }

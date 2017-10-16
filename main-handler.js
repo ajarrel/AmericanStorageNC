@@ -10,10 +10,25 @@ var ratesArray = [
 	{ site: 'Speedway', order: 5, selector: 'table.units-table', uri: 'https://www.bestcarolinastorage.com/self-storage-harrisburg-nc-91762' },
 	{ site: 'AAA', order: 7, selector: 'table#rates-chart', uri: 'https://durhamstoragesolutions.com/self-storage/durham-nc-27703' }
 ];
+var sparefoot = [ //selector is div.unit-list, stored in index 0.selector
+	{ site: 'Site 1', order: 0, uri: 'https://americanstoragenc.com/self-storage/pittsboro-west-nc-27312', selector: 'div.unit-list' },
+	{ site: 'H and R', order: 3, uri: 'https://www.sparefoot.com/Knightdale-NC-self-storage/Excess-Storage-Center-109843' },
+	{ site: 'Harrisburg', order: 4, uri: 'https://www.bestharrisburgselfstorage.com/self-storage/harrisburg-nc-28075' },
+	{ site: 'The Attic', order: 6, uri: 'https://theatticstoragenc.com/self-storage-rates.php' },
+	{ site: 'Site 2', order: 1, uri: 'https://americanstoragenc.com/self-storage/pittsboro-east-nc-27312' },
+	{ site: 'Smithfield', order: 2, uri: 'https://www.excessstoragenc.com/self-storage-knightdale-smithfield.php' },
+	{ site: 'Speedway', order: 5, uri: 'https://www.bestcarolinastorage.com/self-storage-harrisburg-nc-91762' },
+	{ site: 'AAA', order: 7, uri: 'https://durhamstoragesolutions.com/self-storage/durham-nc-27703' }
+];
 
-var deferred = [],promise;
+var promises = [];
+
 
 $(document).ready(function(){
+	$('button').click(function(){
+		$(this).addClass('clicked');
+		$('button').not(this).removeClass('clicked');
+	});
 	
 	$('#pricing').click(getRates);
 	
@@ -22,7 +37,8 @@ $(document).ready(function(){
 function getRates(){
 	$(ratesArray).each(function(i){
 
-		deferred.push( $.get(ratesArray[i].uri, [], function(d){
+		var deferred = new $.Deferred();
+		$.get(ratesArray[i].uri, [], function(d){
 
 			var h = $( d.replace(/<img\b[^>]*>/ig, '') ); //strip images out of response before wrapping in jQuery
 			h.find('td.rate-button').remove();
@@ -33,11 +49,16 @@ function getRates(){
 				.addClass('cell')
 				.append(h.find(ratesArray[i].selector))
 				.prepend(wrapper);
+			
+			deferred.resolve();
 
-		}, 'html') );
+		}, 'html');
+		
+		promises.push(deferred);
+		
 	});
 	
-	promise = $.when( deferred ).done(buildDom);
+	$.when.apply(undefined, promises).promise().done(buildDom);
 }
 
 function buildDom(){
