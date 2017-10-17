@@ -16,7 +16,7 @@ div.cell{
 	border-bottom: solid 2px black;
 }
 
-button{
+button.category{
 	border-radius: 25px;
 	padding: 10px 20px 10px 20px;
 	border: solid #002166 2px;
@@ -28,7 +28,7 @@ button{
 	cursor: pointer;
 }
 
-button:hover{
+button.category:hover{
 	color: firebrick;
 	border-color: firebrick;
 }
@@ -37,7 +37,7 @@ button:hover{
 	border-color: firebrick;
 }
 
-td.monthly-rent{
+td.monthly-rent, span.price{
 	font-size: 16px;
 	font-weight: bold;
 	color: red;
@@ -56,4 +56,9 @@ tr#category{
 	border-bottom: solid black 2px;
 	font-size: 13px;
 	font-weight: bold;
+}
+div.bookable-unit-details{
+	border-bottom: solid black 2px;
+	margin-bottom: 8px;
+	padding-bottom: 8px;
 }
