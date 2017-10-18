@@ -1,11 +1,12 @@
 {
 	"background":{
-		"scripts": ["background.js"]
+		"scripts": ["background.js"],
+		"persistent": false
 	},
 	
 	"manifest_version": 2,
 	"name": "American Self Storage Helper",
-	"version": "0.104",
+	"version": "0.202",
 	
 	"description": "A helpful tool for American Self Storage employees",
 	
@@ -26,6 +27,8 @@
 	"browser_action": {
 		"default_title": "Open Rates Page",
 		"default_popup": "popup.html"
-	}
+	},
+	
+	"content_security_policy": "script-src 'self' https://maps.googleapis.com/; object-src 'self'"
 	
 }
