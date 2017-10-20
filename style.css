@@ -76,3 +76,34 @@ div#topnav{
 	top: -1px;
 	width: 100%;
 }
+
+span.review-time{
+	font-style: italic;
+}
+span.star-rating{
+	font-size: 15px;
+	font-weight: bold;
+}
+div.pref{
+	padding-bottom: 5px;
+}
+div.review-container{
+	padding-bottom: 8px;
+	margin-bottom: 8px;
+	border-bottom: solid 1px gray;
+}
+.fivestar{
+	color: gold;
+}
+.fourstar{
+	color: goldenrod;
+}
+.threestar{
+	color: darkgoldenrod;
+}
+.twostar{
+	color: darkorange;
+}
+.onestar{
+	color: red;
+}

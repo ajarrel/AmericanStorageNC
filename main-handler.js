@@ -60,7 +60,7 @@ $(document).ready(function(){
 		$('button').not(this).removeClass('clicked');
 	});
 	
-	setTimeout(getRatings, 1500);
+	getRatings(); 
 	
 	$('#pricing').click(ratesTable, getRemoteData);
 	$('#sparefoot').click(sparefoot, getRemoteData);
@@ -135,21 +135,51 @@ function buildDom(obj){
 }
 
 function getRemoteGoogleData(e){
-	var map = new google.maps.Map(document.getElementById('map'),{
-		center: {lat: -33.866, lng: 151.196},
-		zoom: 15
-	});
-	var service = new google.maps.places.PlacesService(map);
 	
-	var wrapper = $(document.createElement('h1')).attr('id',e.data[i].site).text(e.data[i].site + ' — ' + e.data[i].rating);
 	$(e.data).each(function(i){
 		
-		service.getDetails({
-			placeId: e.data[i].placeid
-		}, function(place, status){
-			$(document.createElement('div')).addClass('cell');
+		var wrapper = $(document.createElement('h1')).attr('id',e.data[i].site).text(e.data[i].site + ' — ' + e.data[i].rating);
+		var pDom = $(document.createElement('div')).addClass('cell');
+		
+		$(e.data[i].gmap.reviews).each(function(){ //loops through each site's 5 reviews pulled from Google's API
+			var tDom = $(iHtml);
+			
+			var tStr;
+			
+			switch(this.rating){
+				case 5:
+					tStr = 'fivestar';
+				break;
+				case 4:
+					tStr = 'fourstar';
+				break;
+				case 3:
+					tStr = 'threestar';
+				break;
+				case 2:
+					tStr = 'twostar';
+				break;
+				case 1:
+					tStr = 'onestar';
+				break;
+							  }//end switch
+			
+			tDom.find('.author').text(this.author_name); 
+			tDom.find('.star-rating').text(this.rating + String.fromCharCode(9733).repeat(this.rating)).addClass(tStr);
+			tDom.find('.reviewbody').text(this.text);
+			tDom.find('.review-time').text(this.relative_time_description);
+			
+			pDom.prepend(tDom); //use prepend because iterating reviews in descending order, so prepend perservers order
+			
 		});
+		
+		pDom.prepend(wrapper); //put the wrapper in last
+		
+		e.data[i].dom = pDom;
+		
 	});
+	
+	buildDom(e.data);
 }
 
 function getRatings(){
@@ -181,3 +211,5 @@ function formatReview(r){
 		//$(
 	});
 }
+
+var iHtml = '<div class="review-container"><div class="pref"><span class="author"></span><span> - </span><span class="star-rating"></span><br><span class="review-time"></span></div><div class="reviewbody"></div></div>';
