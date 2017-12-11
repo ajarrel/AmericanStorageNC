@@ -10,7 +10,8 @@ var ratesTable = [
 	{ site: 'Site 2', order: 1, selector: 'table#rates-chart', uri: 'https://americanstoragenc.com/self-storage/pittsboro-east-nc-27312', type: 'ajax' },
 	{ site: 'Smithfield', order: 2, selector: 'table#rates-chart', uri: 'https://www.excessstoragenc.com/self-storage-knightdale-smithfield.php', type: 'ajax' },
 	{ site: 'Speedway', order: 5, selector: 'table.units-table', uri: 'https://www.bestcarolinastorage.com/self-storage-harrisburg-nc-91762', type: 'ajax' },
-	{ site: 'AAA', order: 7, selector: 'table#rates-chart', uri: 'https://durhamstoragesolutions.com/self-storage/durham-nc-27703', type: 'ajax' }
+	{ site: 'AAA', order: 7, selector: 'table#rates-chart', uri: 'https://durhamstoragesolutions.com/self-storage/durham-nc-27703', type: 'ajax' },
+	{ site: 'Armadillo', order: 8, selector: '#slwe-storage-units', uri: 'https://www.securestoragetransactions.com/sitelink/index_new.mvc?action=select_unit&UnitID=undefined&sid=601325', type: 'ajax' }
 ];
 var sparefoot = [ //selector is div.unit-list, stored in index 0.selector
 	{ 
@@ -27,7 +28,8 @@ var sparefoot = [ //selector is div.unit-list, stored in index 0.selector
 	{ site: 'Site 2', order: 1, uri: 'https://www.sparefoot.com/Pittsboro-NC-self-storage/American-Self-Storage-Mt-Gilead-109842', selector: 'div.unit-list', type: 'ajax' },
 	{ site: 'Smithfield', order: 2, uri: 'https://www.sparefoot.com/Knightdale-NC-self-storage/Excess-Storage-Center-Smithfield-Road-199467', selector: 'div.unit-list', type: 'ajax' },
 	{ site: 'Speedway', order: 5, uri: 'https://www.sparefoot.com/Harrisburg-NC-self-storage/Speedway-Self-Storage-153068', selector: 'div.unit-list', type: 'ajax' },
-	{ site: 'AAA', order: 7, uri: 'https://www.sparefoot.com/Durham-NC-self-storage/AAA-Mini-Storage-202242', selector: 'div.unit-list', type: 'ajax' }
+	{ site: 'AAA', order: 7, uri: 'https://www.sparefoot.com/Durham-NC-self-storage/AAA-Mini-Storage-202242', selector: 'div.unit-list', type: 'ajax' },
+	{ site: 'Armadillo', order: 8, uri: false, selector: 'div.unit-list', type: 'ajax' }
 ];
 
 var website = [
@@ -38,7 +40,8 @@ var website = [
 	{ site: 'Site 2', order: 1, type: 'iframe', uri: 'https://americanstoragenc.com' },
 	{ site: 'Smithfield', order: 2, type: 'iframe', uri: 'https://www.excessstoragenc.com' },
 	{ site: 'Speedway', order: 5, type: 'iframe', uri: 'https://www.bestcarolinastorage.com' },
-	{ site: 'AAA', order: 7, type: 'iframe', uri: 'https://durhamstoragesolutions.com' }
+	{ site: 'AAA', order: 7, type: 'iframe', uri: 'https://durhamstoragesolutions.com' },
+	{ site: 'Armadillo', order: 8, type: 'iframe', uri: 'https://armadilloselfstoragenc.com/' }
 ];
 
 var review = [
@@ -49,7 +52,8 @@ var review = [
 	{ site: 'Site 2', order: 1, type: 'iframe', placeid: 'ChIJ3yV5jha_rIkRJ-z0TApmqGo' },
 	{ site: 'Smithfield', order: 2, type: 'iframe', placeid: 'ChIJRW7wTRlDrIkRTj3gFBSMoQA' },
 	{ site: 'Speedway', order: 5, type: 'iframe', placeid: 'ChIJhc8GNwYbVIgRAWRZNg1weMk' },
-	{ site: 'AAA', order: 7, type: 'iframe', placeid: 'ChIJszm3u1XjrIkR2GBARWhOYss' }
+	{ site: 'AAA', order: 7, type: 'iframe', placeid: 'ChIJszm3u1XjrIkR2GBARWhOYss' },
+	{ site: 'Armadillo', order: 8, type:'iframe', placeid: 'ChIJA_jJX6cPU4gRFFiDRxL2VfQ' }
 ];
 
 var promises = [],global;
@@ -81,7 +85,7 @@ function getRemoteData(e){
 		
 		var wrapper = $(document.createElement('h1')).attr('id',e.data[i].site).text(e.data[i].site +' — '+ e.data[i].rating); //moved outside IF
 		
-		if (e.data[i].type === 'ajax'){
+		if (e.data[i].type === 'ajax' && e.data[i].uri){
 			$.get(e.data[i].uri, [], function(d){
 
 				var h = $( d.replace(/<img\b[^>]*>/ig, '') ); //strip images out of response before wrapping in jQuery

@@ -6,7 +6,7 @@
 	
 	"manifest_version": 2,
 	"name": "American Self Storage Helper",
-	"version": "0.203",
+	"version": "0.205",
 	
 	"description": "A helpful tool for American Self Storage employees",
 	
@@ -19,6 +19,7 @@
 		"idle",
 		"notifications",
 		"storage",
+		"bookmarks",
 		"http://*/*",
 		"https://*/*",
 		"tabs"
