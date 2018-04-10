@@ -6,7 +6,7 @@
 	
 	"manifest_version": 2,
 	"name": "American Self Storage Helper",
-	"version": "0.901",
+	"version": "0.909",
 	
 	"description": "A helpful tool for American Self Storage employees",
 	
@@ -29,14 +29,6 @@
 		"default_title": "Open Rates Page",
 		"default_popup": "popup.html"
 	},
-	
-	"content_scripts": [
-		{
-			"matches": ["http://*/*", "https://*/*"],
-			"js": ["jquery.js", "hook.js"],
-			"run_at": "document_start"
-		}
-	],
 	
 	"content_security_policy": "script-src 'self' https://maps.googleapis.com/; object-src 'self'"
 	
