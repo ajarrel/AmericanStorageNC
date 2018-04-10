@@ -48,14 +48,14 @@ var sparefoot = [ //selector is div.unit-list, stored in index 0.selector
 var website = [
 	{ site: 'Site 1', order: 0, type: 'iframe', uri: 'https://americanstoragenc.com' },
 	{ site: 'H and R', order: 3, type: 'iframe', uri: 'https://www.excessstoragenc.com' },
-	{ site: 'Harrisburg', order: 4, type: 'iframe', uri: 'https://www.bestharrisburgselfstorage.com' },
-	{ site: 'The Attic', order: 6, type: 'iframe', uri: 'https://theatticstoragenc.com' },
+	{ site: 'Harrisburg', order: 4, type: 'iframe', uri: 'https://www.americanselfstore.com/self-storage/nc/harrisburg/harrisburg-self-storage/' },
+	{ site: 'The Attic', order: 6, type: 'iframe', uri: 'https://www.americanselfstore.com/self-storage/nc/concord/attic-self-storage/' },
 	{ site: 'Site 2', order: 1, type: 'iframe', uri: 'https://americanstoragenc.com' },
 	{ site: 'Smithfield', order: 2, type: 'iframe', uri: 'https://www.excessstoragenc.com' },
-	{ site: 'Speedway', order: 5, type: 'iframe', uri: 'https://www.bestcarolinastorage.com' },
-	{ site: 'AAA', order: 7, type: 'iframe', uri: 'https://durhamstoragesolutions.com' },
+	{ site: 'Speedway', order: 5, type: 'iframe', uri: 'https://www.americanselfstore.com/self-storage/nc/harrisburg/speedway-storage/' },
+	{ site: 'AAA', order: 7, type: 'iframe', uri: 'https://www.americanselfstore.com/self-storage/nc/durham/aaa-ministorage/' },
 	{ site: 'Armadillo', order: 8, type: 'iframe', uri: 'https://armadilloselfstoragenc.com/' },
-	{ site: "ARMSouth", order: 9, type: 'iframe', uri: '' }
+	{ site: "ARMSouth", order: 9, type: 'iframe', uri: 'https://www.americanselfstore.com/self-storage/nc/high-point/armadillo-self-storage-south/' }
 ];
 
 var review = [
@@ -94,9 +94,12 @@ $(document).ready(function(){
 		}
 	});
 	
+	$('#pricing').one(function(){ clearTimeout(st); }); //remove st in the event user clicks "WebSite Pricing before autofire"
+	var st = setTimeout(getRatesData, 3000);
+	
 });
 
-function getRatesData(e){
+function getRatesData(){
 	
 	if( ratesInterval ){
 		clearInterval(ratesInterval);
@@ -107,13 +110,10 @@ function getRatesData(e){
 	
 	$.getJSON("http://excessofc.gotdns.org/s/rates.json", function(d){
 		
-		global = d;
-		
 		d = sortRates(d, "order", /L[0-9]{2}[A-Za-z0-9]{1}/);
-		global = d;
 		
 		for(var site in d){
-			var wrapper = $(document.createElement('h1')).attr('id',d[site].code).text(d[site].name +' — '+ ratings[d[site].code].rating);
+			var wrapper = $(document.createElement('h1')).attr('id',d[site].code).text(d[site].name +' — '+ ratings[d[site].code].rating + ' — Occ: '+d[site].occupancy+'%');
 			
 			var d2 = $(document.createElement('div'))
 					.addClass('cell')
@@ -161,7 +161,7 @@ function getRatesData(e){
 		
 	});
 	
-	ratesInterval = setInterval(getRatesData, 900000); //this whole function is bound to a click event, update rates every 10 minutes
+	ratesInterval = setInterval(getRatesData, 900000); //this whole function is bound to a click event, update rates every 15 minutes
 }
 
 function getRemoteData(e){
