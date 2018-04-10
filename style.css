@@ -107,3 +107,58 @@ div.review-container{
 .onestar{
 	color: red;
 }
+.row {
+    font-size: 18px;
+    margin-top: 18px;
+    padding-bottom: 18px;
+	padding-left: 15px;
+    border-bottom: 1px solid #cccccc;
+	margin-left: auto;
+	margin-right: auto;
+	width: 87%;
+}
+.row:nth-child(even){
+	background-color: #EEEEEE;
+}
+span.unit-size {
+    font-weight: bold;
+    font-size: 19px;
+}
+span.rate{
+	font-size: 28px;
+}
+span.unit-avail {
+    color: #222222;
+    font-style: italic;
+}
+span.occupancy-outer{
+	
+}
+span.occupancy-inner{
+	
+}
+span.critical-vacancy{
+	color: red;
+	font-weight: bold;
+	font-size: 22px;
+}
+.underline{
+	text-decoration: underline;
+}
+.good{
+	color: #189400;
+}
+.ok{
+	color: #dab700;
+}
+.bad{
+	color: red;
+}
+#update-time{
+	font-style: italic;
+	color: darkgray;
+	width: 100%;
+}
+#refresh{
+	color: blue !important;
+}

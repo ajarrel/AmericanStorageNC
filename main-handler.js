@@ -1,17 +1,29 @@
 'use strict';
 
-//Google my places API key 
+function round(value, decimals) {
+	return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+}
 
+
+var ratesInterval = false; //anytime you run clearInterval on this variable, set to false again
+//Google my places API key 
+var ratings = {
+	
+};
+var global;
 var ratesTable = [
-	{ site: 'Site 1', order: 0, selector: 'table#rates-chart', uri: 'https://americanstoragenc.com/self-storage/pittsboro-west-nc-27312', type: 'ajax' },
-	{ site: 'H and R', order: 3, selector: 'table#rates-chart', uri: 'https://www.excessstoragenc.com/self-storage-knightdale-hr.php', type: 'ajax' },
-	{ site: 'Harrisburg', order: 4, selector: 'table#rates-chart', uri: 'https://www.bestharrisburgselfstorage.com/self-storage/harrisburg-nc-28075', type: 'ajax' },
-	{ site: 'The Attic', order: 6, selector: 'table#rates-chart', uri: 'https://theatticstoragenc.com/self-storage-rates.php', type: 'ajax' },
-	{ site: 'Site 2', order: 1, selector: 'table#rates-chart', uri: 'https://americanstoragenc.com/self-storage/pittsboro-east-nc-27312', type: 'ajax' },
-	{ site: 'Smithfield', order: 2, selector: 'table#rates-chart', uri: 'https://www.excessstoragenc.com/self-storage-knightdale-smithfield.php', type: 'ajax' },
-	{ site: 'Speedway', order: 5, selector: 'table.units-table', uri: 'https://www.bestcarolinastorage.com/self-storage-harrisburg-nc-91762', type: 'ajax' },
-	{ site: 'AAA', order: 7, selector: 'table#rates-chart', uri: 'https://durhamstoragesolutions.com/self-storage/durham-nc-27703', type: 'ajax' },
-	{ site: 'Armadillo', order: 8, selector: '#slwe-storage-units', uri: 'https://www.securestoragetransactions.com/sitelink/index_new.mvc?action=select_unit&UnitID=undefined&sid=601325', type: 'ajax' }
+	{ site: 'Site 1', order: 0, selector: 'table#rates-chart', uri: 'https://americanstoragenc.com/self-storage/pittsboro-west-nc-27312', type: 'ajax', loc: "L01A" },
+	{ site: 'H and R', order: 3, selector: 'table#rates-chart', uri: 'https://www.excessstoragenc.com/self-storage-knightdale-hr.php', type: 'ajax', loc: "L002" },
+	{ site: 'Harrisburg', order: 4, selector: 'table#rates-chart', uri: 'https://www.bestharrisburgselfstorage.com/self-storage/harrisburg-nc-28075', type: 'ajax', loc: "L003" },
+	{ site: 'The Attic', order: 6, selector: 'table#rates-chart', uri: 'https://theatticstoragenc.com/self-storage-rates.php', type: 'ajax', loc: "L005" },
+	{ site: 'Site 2', order: 1, selector: 'table#rates-chart', uri: 'https://americanstoragenc.com/self-storage/pittsboro-east-nc-27312', type: 'ajax', loc: "L001" },
+	{ site: 'Smithfield', order: 2, selector: 'table#rates-chart', uri: 'https://www.excessstoragenc.com/self-storage-knightdale-smithfield.php', type: 'ajax', loc: "L006" },
+	{ site: 'Speedway', order: 5, selector: 'table.units-table', uri: 'https://www.bestcarolinastorage.com/self-storage-harrisburg-nc-91762', type: 'ajax', loc: "L004" },
+	{ site: 'AAA', order: 7, selector: 'table#rates-chart', uri: 'https://durhamstoragesolutions.com/self-storage/durham-nc-27703', type: 'ajax', loc: "L007" },
+	{ site: 'Armadillo', order: 8, selector: '#slwe-storage-units', uri: 'https://www.securestoragetransactions.com/sitelink/index_new.mvc?action=select_unit&UnitID=undefined&sid=601325', type: 'ajax', loc: "L008" },
+	{
+		site: "ARMSouth", order: 9, selector: '', uri: '', type: 'ajax', loc: "L009"
+	}
 ];
 var sparefoot = [ //selector is div.unit-list, stored in index 0.selector
 	{ 
@@ -29,7 +41,8 @@ var sparefoot = [ //selector is div.unit-list, stored in index 0.selector
 	{ site: 'Smithfield', order: 2, uri: 'https://www.sparefoot.com/Knightdale-NC-self-storage/Excess-Storage-Center-Smithfield-Road-199467', selector: 'div.unit-list', type: 'ajax' },
 	{ site: 'Speedway', order: 5, uri: 'https://www.sparefoot.com/Harrisburg-NC-self-storage/Speedway-Self-Storage-153068', selector: 'div.unit-list', type: 'ajax' },
 	{ site: 'AAA', order: 7, uri: 'https://www.sparefoot.com/Durham-NC-self-storage/AAA-Mini-Storage-202242', selector: 'div.unit-list', type: 'ajax' },
-	{ site: 'Armadillo', order: 8, uri: false, selector: 'div.unit-list', type: 'ajax' }
+	{ site: 'Armadillo', order: 8, uri: false, selector: 'div.unit-list', type: 'ajax' },
+	{ site: "ARMSouth", order: 9, uri: false, selsecotr: '', type: 'ajax' }
 ];
 
 var website = [
@@ -41,7 +54,8 @@ var website = [
 	{ site: 'Smithfield', order: 2, type: 'iframe', uri: 'https://www.excessstoragenc.com' },
 	{ site: 'Speedway', order: 5, type: 'iframe', uri: 'https://www.bestcarolinastorage.com' },
 	{ site: 'AAA', order: 7, type: 'iframe', uri: 'https://durhamstoragesolutions.com' },
-	{ site: 'Armadillo', order: 8, type: 'iframe', uri: 'https://armadilloselfstoragenc.com/' }
+	{ site: 'Armadillo', order: 8, type: 'iframe', uri: 'https://armadilloselfstoragenc.com/' },
+	{ site: "ARMSouth", order: 9, type: 'iframe', uri: '' }
 ];
 
 var review = [
@@ -53,7 +67,10 @@ var review = [
 	{ site: 'Smithfield', order: 2, type: 'iframe', placeid: 'ChIJRW7wTRlDrIkRTj3gFBSMoQA' },
 	{ site: 'Speedway', order: 5, type: 'iframe', placeid: 'ChIJhc8GNwYbVIgRAWRZNg1weMk' },
 	{ site: 'AAA', order: 7, type: 'iframe', placeid: 'ChIJszm3u1XjrIkR2GBARWhOYss' },
-	{ site: 'Armadillo', order: 8, type:'iframe', placeid: 'ChIJA_jJX6cPU4gRFFiDRxL2VfQ' }
+	{ site: 'Armadillo', order: 8, type:'iframe', placeid: 'ChIJA_jJX6cPU4gRFFiDRxL2VfQ' },
+	{
+		site: "ARMSouth", order: 9, type: "iframe", placeid: 'ChIJsS1IKVAOU4gRVIlir4kg2Xk'
+	}
 ];
 
 var promises = [],global;
@@ -66,15 +83,89 @@ $(document).ready(function(){
 	
 	getRatings(); 
 	
-	$('#pricing').click(ratesTable, getRemoteData);
+	$('#pricing').click(ratesTable, getRatesData);
 	$('#sparefoot').click(sparefoot, getRemoteData);
 	$('#website').click(website, getRemoteData);
 	$('#google-review').click(review, getRemoteGoogleData); //special handler since data comes via API instead of AJAX/IFRAME
+	$('button.category').not('#pricing').click(function(){
+		if(ratesInterval){
+			clearInterval(ratesInterval);
+			ratesInterval = false;
+		}
+	});
 	
 });
 
+function getRatesData(e){
+	
+	if( ratesInterval ){
+		clearInterval(ratesInterval);
+		ratesInterval = false;
+	}
+	
+	$("#target").empty();
+	
+	$.getJSON("http://excessofc.gotdns.org/s/rates.json", function(d){
+		
+		global = d;
+		
+		d = sortRates(d, "order", /L[0-9]{2}[A-Za-z0-9]{1}/);
+		global = d;
+		
+		for(var site in d){
+			var wrapper = $(document.createElement('h1')).attr('id',d[site].code).text(d[site].name +' — '+ ratings[d[site].code].rating);
+			
+			var d2 = $(document.createElement('div'))
+					.addClass('cell')
+					.prepend(wrapper).appendTo("#target");
+			
+			d[site] = sortRates(d[site], "dcArea", /[0-9]+/);
+			global = d;
+			
+			for(var i in d[site]){
+				if( /[0-9]+/.test(i) ){ //test for i is an integer
+					$(document.createElement('div'))
+						.addClass('row')
+						.append('<span class="unit-size"><span class="rate">$ ' + (d[site][i].dcPushRate + 12) + '</span> - ' + d[site][i].dcWidth + ' x ' + d[site][i].dcLength + ' - ' + d[site][i].sTypeName + '</span><br>')
+						.append('<span class="special">' + d[site][i].bestDiscount + '</span><br>')
+						.append('<span class="unit-avail">Avail. Units: <span class="vacant">'+d[site][i].iTotalVacant + '</span> out of '+d[site][i].iTotalUnits + ' Total</span><br><span class="occupancy-outer">Occupancy: <span class="occupancy-inner">'+round(d[site][i].occupancyPercent,1) + '</span>%</span>').appendTo(d2);
+				}
+
+			}
+			
+			
+		}
+		
+		$(".occupancy-inner").each(function(){
+			var intVal = parseInt(this.innerText);
+			
+			if(intVal >= 90){
+				$(this).parent().addClass('good').prepend("✔");
+			}
+			else if(intVal >= 80 && intVal < 90){
+				$(this).parent().addClass('ok').prepend("⚠");
+			}
+			else{
+				$(this).parent().addClass('bad').prepend("❌");
+			}
+		});
+		
+		var nDate = new Date();
+		var hours = nDate.getHours();
+		var amPm = (nDate.getHours() >= 11) ? 'pm' : 'am';
+		var minutes = (nDate.getMinutes() <= 9) ? ('0' + nDate.getMinutes()) : nDate.getMinutes();
+		hours = (hours >= 12) ? hours - 12 : hours;
+		var s = (nDate.getMonth()+1) +'/'+ nDate.getDate() + '  '+hours + ':' + minutes + ' '+amPm;
+		$("#target").prepend('<span id="update-time">Data last updated at: '+s+' <a id="refresh" href="#">refresh data</a></span><br>');
+		$("#refresh").click(getRatesData);
+		
+	});
+	
+	ratesInterval = setInterval(getRatesData, 900000); //this whole function is bound to a click event, update rates every 10 minutes
+}
+
 function getRemoteData(e){
-	console.log(e);
+	
 	var ratesArray = e.data;
 	
 	$('#target').empty().append('<img src="img/spinner.gif"></img>Loading...hang tight');
@@ -118,7 +209,7 @@ function getRemoteData(e){
 }
 
 function buildDom(obj){
-	console.log("Obj inside buildDom"); console.log(obj);
+	
 	var tArr = new Array(obj.length), order; //tie the length of this temp array to the ratesArray
 	global = obj;
 	
@@ -202,6 +293,11 @@ function getRatings(){
 			review[i].rating = place.rating + String.fromCharCode(9733);
 			ratesTable[i].rating = place.rating + String.fromCharCode(9733);
 			
+			ratings[ratesTable[i].loc] = { //this creates an object where the root properties are "L001" and "L002" etc to make access easier
+				site: ratesTable[i].site,
+				rating: place.rating + String.fromCharCode(9733)
+			};
+			
 			sparefoot[i].gmap = place; //put the entire return result from google in the gmap property
 			website[i].gmap = place;
 			review[i].gmap = place;
@@ -210,10 +306,38 @@ function getRatings(){
 	});
 }
 
-function formatReview(r){
-	$(r).each(function(i){
-		//$(
+function sortRates(obj, keyName, regexFilter = /.*/){//obj is the obj to sort, keyname is the root-level prop of obj to sort by (must be int), and regexFilter is a way to filter out values into sortable and non-sortable arrays. Default Regex will match anything (i.e. sort everything)
+	
+	var sortArr = []; //Sort array holds the values to be sorted
+	var appendArr = []; //append array holds values to be tacked on at the end
+	var returnObj = { }; //copy of initial object to reutn
+	var last = 1000000; //hardcodes sortable limit of object
+	
+	for(var prop in obj){ //loop through passed object
+		
+		if(regexFilter.test(prop)){ //filter numeric properties into the sortArray
+			sortArr.push([prop, obj[prop][keyName]]);
+		}
+		else{ //put non-numeric properties in the non-sorting array
+			appendArr.push([prop, last++]);
+		}
+		
+	}
+	
+	sortArr.sort(function(a, b){ //sort the sortable array
+		return a[1] - b[1];
 	});
+	
+	for(var i = 0; i < sortArr.length; i++){ //loop through the sortArray and append objects in the sort order into returnObj
+		returnObj[i] = obj[sortArr[i][0]];
+	}
+	
+	for(i = 0; i <  appendArr.length; i++){ //loop through the non-sorted Array and append property/value pair un-modified back into return obj
+		returnObj[appendArr[i][0]] = obj[appendArr[i][0]];
+	}
+	
+	return returnObj;
 }
+
 
 var iHtml = '<div class="review-container"><div class="pref"><span class="author"></span><span> - </span><span class="star-rating"></span><br><span class="review-time"></span></div><div class="reviewbody"></div></div>';
