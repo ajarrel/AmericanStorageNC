@@ -105,7 +105,7 @@ function pollChanges(){
         
     }
     else{
-        ratesInterval = setInterval(pollChanges, 30000);
+        ratesInterval = setInterval(pollChanges, 60000);
     }
     
     $.getJSON("http://excessofc.gotdns.org/s/hash.json", function(d){
@@ -169,13 +169,21 @@ function parseRatesData(d){
 }
 function getRatesData(useCache = false){
 	
-	$("#target").empty();
 	
     if(useCache){
         console.log("Cache set to true, pulling data from cache");
-        parseRatesData(JSON.parse(localStorage.cache));
+        if( $("div.row").length > 1){
+            //Only update time as DOM is already in place and data is current
+            dataRefreshTime();
+        }
+        else{
+            //else populate page with data from cache
+            $("#target").empty();
+            parseRatesData(JSON.parse(localStorage.cache));
+        }
     }
     else{
+        $("#target").empty();
         console.log("Cache set to false, pulling data from server");
         $.getJSON("http://excessofc.gotdns.org/s/rates.json", function(d){
             
@@ -368,7 +376,7 @@ function dataRefreshTime(){
     var str = 'no changes to data since '+localStorage.lastRefresh;
     
     $("#update-time").remove();
-    $("#target").prepend('<span id="update-time">Data last updated at: '+s+' <a id="refresh" href="#">refresh data</a> - '+str+'<br></span>');
+    $("#target").prepend('<span id="update-time">Data last synced at: '+s+' <a id="refresh" href="#">refresh data</a> - '+str+'<br></span>');
 }
 function prettyTime(){
     var nDate = new Date();
