@@ -10,7 +10,7 @@ var ratesInterval = false; //anytime you run clearInterval on this variable, set
 var ratings = {
 	
 };
-var global;
+var global, hash;
 var ratesTable = [
 	{ site: 'Site 1', order: 0, selector: 'table#rates-chart', uri: 'https://americanstoragenc.com/self-storage/pittsboro-west-nc-27312', type: 'ajax', loc: "L01A" },
 	{ site: 'H and R', order: 3, selector: 'table#rates-chart', uri: 'https://www.excessstoragenc.com/self-storage-knightdale-hr.php', type: 'ajax', loc: "L002" },
@@ -83,7 +83,7 @@ $(document).ready(function(){
 	
 	getRatings(); 
 	
-	$('#pricing').click(ratesTable, getRatesData);
+	$('#pricing').click(ratesTable, pollChanges);
 	$('#sparefoot').click(sparefoot, getRemoteData);
 	$('#website').click(website, getRemoteData);
 	$('#google-review').click(review, getRemoteGoogleData); //special handler since data comes via API instead of AJAX/IFRAME
@@ -93,47 +93,62 @@ $(document).ready(function(){
 			ratesInterval = false;
 		}
 	});
+    $(document).on("click", "#refresh", pollChanges);
 	
 	$('#pricing').one(function(){ clearTimeout(st); }); //remove st in the event user clicks "WebSite Pricing before autofire"
-	var st = setTimeout(getRatesData, 3000);
+	var st = setTimeout(pollChanges, 2500);
 	
 });
-
-function getRatesData(){
-	
-	if( ratesInterval ){
-		clearInterval(ratesInterval);
-		ratesInterval = false;
-	}
-	
-	$("#target").empty();
-	
-	$.getJSON("http://excessofc.gotdns.org/s/rates.json", function(d){
-		
-		d = sortRates(d, "order", /L[0-9]{2}[A-Za-z0-9]{1}/);
+function pollChanges(){
+    
+    if(ratesInterval){
+        
+    }
+    else{
+        ratesInterval = setInterval(pollChanges, 30000);
+    }
+    
+    $.getJSON("http://excessofc.gotdns.org/s/hash.json", function(d){
+        if( d.hash === localStorage.hash ){
+            console.log("Polled changes, no change. Local hash: "+localStorage.hash + " -- remote hash: "+d.hash);
+            if(localStorage.getItem('cache') === null){
+                getRatesData(false);
+            }
+            else{
+                //rates should already be on-screen
+                getRatesData(true);
+            }
+        }
+        else{
+            console.log("Polled changes, hash mismatch, updating rates. Local hash: "+localStorage.hash+" -- remote hash: "+d.hash);
+            getRatesData(false);
+        }
+    });
+}
+function parseRatesData(d){
+    d = sortRates(d, "order", /L[0-9]{2,3}A?/);
+        localStorage.hash = d.hash;
 		
 		for(var site in d){
-			var wrapper = $(document.createElement('h1')).attr('id',d[site].code).text(d[site].name +' — '+ ratings[d[site].code].rating + ' — Occ: '+d[site].occupancy+'%');
-			
-			var d2 = $(document.createElement('div'))
-					.addClass('cell')
-					.prepend(wrapper).appendTo("#target");
-			
-			d[site] = sortRates(d[site], "dcArea", /[0-9]+/);
-			global = d;
-			
-			for(var i in d[site]){
-				if( /[0-9]+/.test(i) ){ //test for i is an integer
-					$(document.createElement('div'))
-						.addClass('row')
-						.append('<span class="unit-size"><span class="rate">$ ' + (d[site][i].dcPushRate + 12) + '</span> - ' + d[site][i].dcWidth + ' x ' + d[site][i].dcLength + ' - ' + d[site][i].sTypeName + '</span><br>')
-						.append('<span class="special">' + d[site][i].bestDiscount + '</span><br>')
-						.append('<span class="unit-avail">Avail. Units: <span class="vacant">'+d[site][i].iTotalVacant + '</span> out of '+d[site][i].iTotalUnits + ' Total</span><br><span class="occupancy-outer">Occupancy: <span class="occupancy-inner">'+round(d[site][i].occupancyPercent,1) + '</span>%</span>').appendTo(d2);
-				}
+            if( site !== "hash" ){
+                var wrapper = $(document.createElement('h1')).attr('id',d[site].code).text(d[site].name +' — '+ ratings[d[site].code].rating + ' — Occ: '+d[site].occupancy+'%');
 
-			}
-			
-			
+                var d2 = $(document.createElement('div'))
+                        .addClass('cell')
+                        .prepend(wrapper).appendTo("#target");
+
+                d[site] = sortRates(d[site], "dcArea", /[0-9]+/);
+
+                for(var i in d[site]){
+                    if( /[0-9]+/.test(i) ){ //test for i is an integer
+                        $(document.createElement('div'))
+                            .addClass('row')
+                            .append('<span class="unit-size"><span class="rate">$ ' + (d[site][i].dcPushRate + 12) + '</span> - ' + d[site][i].dcWidth + ' x ' + d[site][i].dcLength + ' - ' + d[site][i].sTypeName + '</span><br>')
+                            .append('<span class="special">' + d[site][i].bestDiscount + '</span><br>')
+                            .append('<span class="unit-avail">Avail. Units: <span class="vacant">'+d[site][i].iTotalVacant + '</span> out of '+d[site][i].iTotalUnits + ' Total</span><br><span class="occupancy-outer">Occupancy: <span class="occupancy-inner">'+round(d[site][i].occupancyPercent,1) + '</span>%</span>').appendTo(d2);
+                    }
+                }
+            }
 		}
 		
 		$(".occupancy-inner").each(function(){
@@ -149,19 +164,27 @@ function getRatesData(){
 				$(this).parent().addClass('bad').prepend("❌");
 			}
 		});
-		
-		var nDate = new Date();
-		var hours = nDate.getHours();
-		var amPm = (nDate.getHours() >= 11) ? 'pm' : 'am';
-		var minutes = (nDate.getMinutes() <= 9) ? ('0' + nDate.getMinutes()) : nDate.getMinutes();
-		hours = (hours >= 12) ? hours - 12 : hours;
-		var s = (nDate.getMonth()+1) +'/'+ nDate.getDate() + '  '+hours + ':' + minutes + ' '+amPm;
-		$("#target").prepend('<span id="update-time">Data last updated at: '+s+' <a id="refresh" href="#">refresh data</a></span><br>');
-		$("#refresh").click(getRatesData);
-		
-	});
+        
+        dataRefreshTime();
+}
+function getRatesData(useCache = false){
 	
-	ratesInterval = setInterval(getRatesData, 900000); //this whole function is bound to a click event, update rates every 15 minutes
+	$("#target").empty();
+	
+    if(useCache){
+        console.log("Cache set to true, pulling data from cache");
+        parseRatesData(JSON.parse(localStorage.cache));
+    }
+    else{
+        console.log("Cache set to false, pulling data from server");
+        $.getJSON("http://excessofc.gotdns.org/s/rates.json", function(d){
+            
+            parseRatesData(d);
+            localStorage.lastRefresh = prettyTime();
+            localStorage.cache = JSON.stringify(d);
+
+        });
+    }
 }
 
 function getRemoteData(e){
@@ -339,5 +362,22 @@ function sortRates(obj, keyName, regexFilter = /.*/){//obj is the obj to sort, k
 	return returnObj;
 }
 
-
+function dataRefreshTime(){
+    var s = prettyTime();
+    
+    var str = 'no changes to data since '+localStorage.lastRefresh;
+    
+    $("#update-time").remove();
+    $("#target").prepend('<span id="update-time">Data last updated at: '+s+' <a id="refresh" href="#">refresh data</a> - '+str+'<br></span>');
+}
+function prettyTime(){
+    var nDate = new Date();
+    var hours = nDate.getHours();
+    var amPm = (nDate.getHours() >= 11) ? 'pm' : 'am';
+    var minutes = (nDate.getMinutes() <= 9) ? ('0' + nDate.getMinutes()) : nDate.getMinutes();
+    hours = (hours >= 12) ? hours - 12 : hours;
+    var s = (nDate.getMonth()+1) +'/'+ nDate.getDate() + '  '+hours + ':' + minutes + ' '+amPm;
+    
+    return s;
+}
 var iHtml = '<div class="review-container"><div class="pref"><span class="author"></span><span> - </span><span class="star-rating"></span><br><span class="review-time"></span></div><div class="reviewbody"></div></div>';
