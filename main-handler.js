@@ -141,9 +141,10 @@ function parseRatesData(d){
 
                 for(var i in d[site]){
                     if( /[0-9]+/.test(i) ){ //test for i is an integer
+                        d[site][i].dcPushRate += (/Park/.test(d[site][i].sTypeName)) ? 0 : 12; //test type for parking. If Parking space, add 0, if not, add 12 to rate
                         $(document.createElement('div'))
                             .addClass('row')
-                            .append('<span class="unit-size"><span class="rate">$ ' + (d[site][i].dcPushRate + 12) + '</span> - ' + d[site][i].dcWidth + ' x ' + d[site][i].dcLength + ' - ' + d[site][i].sTypeName + '</span><br>')
+                            .append('<span class="unit-size"><span class="rate">$ ' + (d[site][i].dcPushRate) + '</span> - ' + d[site][i].dcWidth + ' x ' + d[site][i].dcLength + ' - ' + d[site][i].sTypeName + '</span><br>')
                             .append('<span class="special">' + d[site][i].bestDiscount + '</span><br>')
                             .append('<span class="unit-avail">Avail. Units: <span class="vacant">'+d[site][i].iTotalVacant + '</span> out of '+d[site][i].iTotalUnits + ' Total</span><br><span class="occupancy-outer">Occupancy: <span class="occupancy-inner">'+round(d[site][i].occupancyPercent,1) + '</span>%</span>').appendTo(d2);
                     }
