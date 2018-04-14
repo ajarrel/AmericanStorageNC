@@ -1,17 +1,20 @@
 'use strict';
 
-function round(value, decimals) {
+function round(value, decimals) { //simple function to consistenly round float numbers
 	return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
 }
 
 
-var ratesInterval = false; //anytime you run clearInterval on this variable, set to false again
+var ratesInterval = false; //anytime you run clearInterval(ratesInterval) on this variable, set to false again
 //Google my places API key 
 var ratings = {
 	
 };
-var global, hash;
-var ratesTable = [
+var options = { //placeholder for the options object
+    
+};
+var global, hash; //deprecated global variables for holding the caching-hash check val, and global holds the JSON object for Website Prices
+var ratesTable = [ //ratesTable holds the rates pages URL for each of the sites 
 	{ site: 'Site 1', order: 0, selector: 'table#rates-chart', uri: 'https://americanstoragenc.com/self-storage/pittsboro-west-nc-27312', type: 'ajax', loc: "L01A" },
 	{ site: 'H and R', order: 3, selector: 'table#rates-chart', uri: 'https://www.excessstoragenc.com/self-storage-knightdale-hr.php', type: 'ajax', loc: "L002" },
 	{ site: 'Harrisburg', order: 4, selector: 'table#rates-chart', uri: 'https://www.bestharrisburgselfstorage.com/self-storage/harrisburg-nc-28075', type: 'ajax', loc: "L003" },
@@ -45,7 +48,7 @@ var sparefoot = [ //selector is div.unit-list, stored in index 0.selector
 	{ site: "ARMSouth", order: 9, uri: false, selsecotr: '', type: 'ajax' }
 ];
 
-var website = [
+var website = [ //contains the URL of the homepage of every site
 	{ site: 'Site 1', order: 0, type: 'iframe', uri: 'https://americanstoragenc.com' },
 	{ site: 'H and R', order: 3, type: 'iframe', uri: 'https://www.excessstoragenc.com' },
 	{ site: 'Harrisburg', order: 4, type: 'iframe', uri: 'https://www.americanselfstore.com/self-storage/nc/harrisburg/harrisburg-self-storage/' },
@@ -58,7 +61,7 @@ var website = [
 	{ site: "ARMSouth", order: 9, type: 'iframe', uri: 'https://www.americanselfstore.com/self-storage/nc/high-point/armadillo-self-storage-south/' }
 ];
 
-var review = [
+var review = [ //contains the Google PlaceID of every one of the 10 physical store locations 
 	{ site: 'Site 1', order: 0, type: 'iframe', placeid: 'ChIJT10VpoO2rIkRM3F1gaYq1Pg' },
 	{ site: 'H and R', order: 3, type: 'iframe', placeid: 'ChIJ66SUJ35crIkRu4s9fwR3vBk' },
 	{ site: 'Harrisburg', order: 4, type: 'iframe', placeid: 'ChIJ_SYf398ayYkRC8_NY0-XM4c' },
@@ -81,84 +84,114 @@ $(document).ready(function(){
 		$('button').not(this).removeClass('clicked');
 	});
 	
-	getRatings(); 
+	getRatings(); //preload the Google My business ratings info
 	
-	$('#pricing').click(ratesTable, pollChanges);
+	$('#pricing').click(ratesTable, pollChanges); //assign event handlers to the 4 main UI buttons
 	$('#sparefoot').click(sparefoot, getRemoteData);
 	$('#website').click(website, getRemoteData);
 	$('#google-review').click(review, getRemoteGoogleData); //special handler since data comes via API instead of AJAX/IFRAME
-	$('button.category').not('#pricing').click(function(){
+	
+    $('button.category').not('#pricing').click(function(){ //anytime a button OTHER than Website Prices is clicked, check to see if ratesInterval is set. If it is, clearInterval
 		if(ratesInterval){
 			clearInterval(ratesInterval);
 			ratesInterval = false;
 		}
 	});
-    $(document).on("click", "#refresh", pollChanges);
+    $(document).on("click", "#refresh", pollChanges); //binding in this fashion means this event handler will work regardless of whether the targeted element is in the DOM or not
 	
 	$('#pricing').one(function(){ clearTimeout(st); }); //remove st in the event user clicks "WebSite Pricing before autofire"
-	var st = setTimeout(pollChanges, 2500);
+	var st = setTimeout(pollChanges, 2500); //show Website Prices (just as if user had clicked) 2.5 seconds after $(document).ready()
+    
+    if(localStorage.getItem("options") === null){ //init options. test if set before setting to default values
+        var opts = {
+            addProtection: true,
+            showPush: true,
+            showStandard: false,
+            showReserved: false,
+            showAllUnitTypes: false,
+            showNextAvailUnit: false
+        };
+        localStorage.options = JSON.stringify(opts); //store in localStorage as a JSON string. Use JSON.parse(localStorage.options) to retrieve JSON obj
+        options = opts;
+    }
+    else{ //else case means options already set---load into global options variable from localStorage
+        options = JSON.parse(localStorage.options);
+    }
 	
 });
-function pollChanges(){
+function pollChanges(){ //core function that checks for changes to data and sycns if changes
     
-    if(ratesInterval){
+    if(ratesInterval){ //if ratesInterval is set, do no thing because pollChanges should already be running every minute
         
     }
-    else{
+    else{ //if pollChanges was called and interval not set, set pollChanges to run on 1m interval 
         ratesInterval = setInterval(pollChanges, 60000);
     }
     
-    $.getJSON("http://excessofc.gotdns.org/s/hash.json", function(d){
-        if( d.hash === localStorage.hash ){
-            console.log("Polled changes, no change. Local hash: "+localStorage.hash + " -- remote hash: "+d.hash);
-            if(localStorage.getItem('cache') === null){
+    $.getJSON("http://excessofc.gotdns.org/s/hash.json", function(d){ //get the rates object from the server
+        if( d.hash === localStorage.hash ){ //if data is retrieved and hash from server === hash from localStorage, call getRatesData(false) to tell that function to use the local cached object to build the dom from instead. hash.json on the server is just an object in format { hash: HASHVALUEGOESHERE }. This is to minimize server load
+            
+            if(localStorage.getItem('cache') === null){ //if cache doesn't exist, then call getRatesData with "false" --- this should be a rare first-run bug
                 getRatesData(false);
             }
             else{
                 //rates should already be on-screen
-                getRatesData(true);
+                getRatesData(true); //load data from cache
             }
         }
-        else{
+        else{ //hash mismatch, this means data is out of sync, so call getRatesData(false) to force refresh of data
             console.log("Polled changes, hash mismatch, updating rates. Local hash: "+localStorage.hash+" -- remote hash: "+d.hash);
             getRatesData(false);
         }
     });
 }
 function parseRatesData(d){
-    d = sortRates(d, "order", /L[0-9]{2,3}A?/);
-        localStorage.hash = d.hash;
+    d = sortRates(d, "order", /L[0-9]{2,3}A?/); //sort rates, d is the obj to sort, "order" is the key to sort by, and the last is a regex to filter out keys from sorting
+        localStorage.hash = d.hash; //update localStorage hash
 		
-		for(var site in d){
-            if( site !== "hash" ){
-                var wrapper = $(document.createElement('h1')).attr('id',d[site].code).text(d[site].name +' — '+ ratings[d[site].code].rating + ' — Occ: '+d[site].occupancy+'%');
+		for(var site in d){ //iterate through each of the physical stores
+            if( site !== "hash" ){ // only run on the stores, not the meta properties (i.e. hash)
+                var wrapper = $(document.createElement('h1')).attr('id',d[site].code).text(d[site].name +' — '+ ratings[d[site].code].rating + ' — Occ: '+d[site].occupancy+'%'); //create the header of the (currently) 10 main divs (.cell) inside #target
 
                 var d2 = $(document.createElement('div'))
                         .addClass('cell')
-                        .prepend(wrapper).appendTo("#target");
+                        .prepend(wrapper).appendTo("#target"); //put wrapper at the beginning of the div d2, and insert d2 into #target
 
-                d[site] = sortRates(d[site], "dcArea", /[0-9]+/);
+                d[site] = sortRates(d[site], "dcArea", /[0-9]+/); //sort each sub array by the "dcArea" property, filter out any numeric keys
 
-                for(var i in d[site]){
+                for(var i in d[site]){ //subloop through the properties of each parent site
                     if( /[0-9]+/.test(i) ){ //test for i is an integer
-                        d[site][i].dcPushRate += (/Park/.test(d[site][i].sTypeName)) ? 0 : 12; //test type for parking. If Parking space, add 0, if not, add 12 to rate
-                        $(document.createElement('div'))
+                        if(options.addPushRate){ //test options.addPushrate
+                            d[site][i].dcPushRate += (/Park/.test(d[site][i].sTypeName)) ? 0 : 12; //test type for parking. If Parking space, add 0, if not, add 12 to rate
+                        }//no need for else case because dcPushRate is good as-is 
+
+                        var tDiv = $(document.createElement('div'))
                             .addClass('row')
                             .append('<span class="unit-size"><span class="rate">$ ' + (d[site][i].dcPushRate) + '</span> - ' + d[site][i].dcWidth + ' x ' + d[site][i].dcLength + ' - ' + d[site][i].sTypeName + '</span><br>')
                             .append('<span class="special">' + d[site][i].bestDiscount + '</span><br>')
-                            .append('<span class="unit-avail">Avail. Units: <span class="vacant">'+d[site][i].iTotalVacant + '</span> out of '+d[site][i].iTotalUnits + ' Total</span><br><span class="occupancy-outer">Occupancy: <span class="occupancy-inner">'+round(d[site][i].occupancyPercent,1) + '</span>%</span>').appendTo(d2);
+                            .append('<span class="unit-avail">Avail. Units: <span class="vacant">'+d[site][i].iTotalVacant + '</span> out of '+d[site][i].iTotalUnits + ' Total</span><br><span class="occupancy-outer">Occupancy: <span class="occupancy-inner">'+round(d[site][i].occupancyPercent,1) + '</span>%</span>').appendTo(d2); //this adds the bulk of the dom data for each unit type for each store
+                        
+                        if(options.showReserved){ //beginnings of using options to customize displayed data
+                            $(tDiv).append('<br><span class="reserved">'+d[site][i].iTotalReserved+' units reserved</span>');
+                        }
+                        if(options.showStandard){
+                            $(tDiv).append('<br><span class="std-rate">Standard rate: $'+d[site][i].dcStdRate+'</span>');
+                        }
+                        if(options.showNextAvailUnit){
+                            $(tDiv).append('<br><span class="next-avail">Next availble: '+d[site][i].sUnitName_FirstAvailable+'</span>');
+                        }
                     }
                 }
             }
 		}
 		
-		$(".occupancy-inner").each(function(){
+		$(".occupancy-inner").each(function(){ //add custom styling depending on the value of the occupancy of each unit type
 			var intVal = parseInt(this.innerText);
 			
-			if(intVal >= 90){
+			if(intVal >= 90){ //if occupancy > 90, addClass good and add a check mark at the beginning
 				$(this).parent().addClass('good').prepend("✔");
 			}
-			else if(intVal >= 80 && intVal < 90){
+			else if(intVal >= 80 && intVal < 90){ //the rest of these cases should make sense in the context of the first case
 				$(this).parent().addClass('ok').prepend("⚠");
 			}
 			else{
@@ -166,12 +199,12 @@ function parseRatesData(d){
 			}
 		});
         
-        dataRefreshTime();
+        dataRefreshTime(); //refresh data sync time
 }
-function getRatesData(useCache = false){
+function getRatesData(useCache = false){ //useCache defaults to false, which means new data is pulled from the server
 	
 	
-    if(useCache){
+    if(useCache){ //useCache is a boolean flag. True means load from localStorage.cache (via JSON.parse)
         console.log("Cache set to true, pulling data from cache");
         if( $("div.row").length > 1){
             //Only update time as DOM is already in place and data is current
@@ -183,20 +216,20 @@ function getRatesData(useCache = false){
             parseRatesData(JSON.parse(localStorage.cache));
         }
     }
-    else{
+    else{ //else case means useCache === false, so clear #target and pull new data from server
         $("#target").empty();
         console.log("Cache set to false, pulling data from server");
         $.getJSON("http://excessofc.gotdns.org/s/rates.json", function(d){
             
-            parseRatesData(d);
-            localStorage.lastRefresh = prettyTime();
-            localStorage.cache = JSON.stringify(d);
+            parseRatesData(d); //once data download is done, build dom via call to parseRatesData and pass it the JSON obj returned from server
+            localStorage.lastRefresh = prettyTime(); //store a pretty string of the current time in localStorage.lastRefresh
+            localStorage.cache = JSON.stringify(d); //update cache 
 
         });
     }
 }
 
-function getRemoteData(e){
+function getRemoteData(e){ //deprecated function that only handles Website button and Sparefoot button
 	
 	var ratesArray = e.data;
 	
@@ -235,7 +268,7 @@ function getRemoteData(e){
 		promises.push(deferred);
 
 	});	
-	$.when.apply(undefined, promises).promise().done(function(){
+	$.when.apply(undefined, promises).promise().done(function(){ //only run build DOM after every AJAX request is complete
 		buildDom(e.data);
 	});
 }
@@ -247,12 +280,12 @@ function buildDom(obj){
 	
 	$('#target').empty(); //clean #target before append
 	
-	$(obj).each(function(i){
+	$(obj).each(function(i){ //iterate through obj and use the order property in obj to organize value is destination array tArry
 		order = obj[i].order;
 		tArr[order] = obj[i].dom;
 	});
 	
-	$(tArr).each(function(){
+	$(tArr).each(function(){ //now that tArr is in the correct order, iterate through it and append to #target
 		$(this).appendTo('#target');
 	});
 	
@@ -371,15 +404,15 @@ function sortRates(obj, keyName, regexFilter = /.*/){//obj is the obj to sort, k
 	return returnObj;
 }
 
-function dataRefreshTime(){
+function dataRefreshTime(){ //displays last time data was updated in a pretty string format
     var s = prettyTime();
     
     var str = 'no changes to data since '+localStorage.lastRefresh;
     
-    $("#update-time").remove();
-    $("#target").prepend('<span id="update-time">Data last synced at: '+s+' <a id="refresh" href="#">refresh data</a> - '+str+'<br></span>');
+    $("#update-time").remove(); //delete the update time
+    $("#target").prepend('<span id="update-time">Data last synced at: '+s+' <a id="refresh" href="#">refresh data</a> - '+str+'<br></span>'); //rebuild the #update-time portion of the DOM with correct data
 }
-function prettyTime(){
+function prettyTime(){ //gets the current time in a pretty format. Returns that pretty formatted string
     var nDate = new Date();
     var hours = nDate.getHours();
     var amPm = (nDate.getHours() >= 11) ? 'pm' : 'am';
@@ -388,5 +421,11 @@ function prettyTime(){
     var s = (nDate.getMonth()+1) +'/'+ nDate.getDate() + '  '+hours + ':' + minutes + ' '+amPm;
     
     return s;
+}
+
+function setOptions(o){ //just beginning to build a function to set options to control the program's execution
+    var s = JSON.stringify(o);
+    localStorage.options = s;
+    options = o;
 }
 var iHtml = '<div class="review-container"><div class="pref"><span class="author"></span><span> - </span><span class="star-rating"></span><br><span class="review-time"></span></div><div class="reviewbody"></div></div>';
