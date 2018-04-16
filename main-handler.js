@@ -162,23 +162,40 @@ function parseRatesData(d){
                 for(var i in d[site]){ //subloop through the properties of each parent site
                     if( /[0-9]+/.test(i) ){ //test for i is an integer BC integer property names are unit type fields. Named properties are meta-data
                         
+                        var pp = 0;
+                        var rateStr = '';
                         if(options.addProtection){ //test options.addPushrate
-                            d[site][i].dcPushRate += (/Park/i.test(d[site][i].sTypeName)) ? 0 : 12; //test type for parking. If Parking space, add 0, if not, add 12 to rate
-                        }//no need for else case because dcPushRate is good as-is
+                            pp = (/Park/i.test(d[site][i].sTypeName)) ? 0 : 12; //test type for parking. If Parking space, add 0, if not, add 12 to rate
+                            var allIn = pp + d[site][i].dcPushRate;
+                            if(!pp){ //if pp !== true (0 = false) then push rate Str is good as is
+                                rateStr = d[site][i].dcPushRate;
+                            }
+                            else{ //else make a pretty explanation of how the all-in price works
+                                rateStr = d[site][i].dcPushRate + ' $'+pp+' = '+(d[site][i].dcPushRate+pp);
+                            }
+                            
+                        }
+
                         
-                        var eStr = ''; //null string for case where options.showReserved = false OR none reserved
+                        var eStr = '+ Vacant: '+d[site][i].iTotalVacant+'<br>- Reserved: '+d[site][i].iTotalReserved+'<br>= Available: '+(d[site][i].iTotalVacant - d[site][i].iTotalReserved); //string to append to DOM in tDiv assignment below
                         var occ = round(d[site][i].occupancyPercent,1); //set default occupancy calc for unit Types
                         
                         if(options.showReserved && d[site][i].iTotalReserved > 0){ //test option and if any are reserved
-                            eStr = ' (Vac: '+d[site][i].iTotalVacant+' - Resv: '+d[site][i].iTotalReserved+' = Avail: '+(d[site][i].iTotalVacant - d[site][i].iTotalReserved)+')'; //string to append to DOM in tDiv assignment below
                             occ = round(d[site][i].occupancyWithReserved,1) //modified occ% calc for unit type with reservations and option set
                         }
 
                         var tDiv = $(document.createElement('div'))
                             .addClass('row')
-                            .append('<span class="unit-size"><span class="rate">$ ' + (d[site][i].dcPushRate) + '</span> - ' + d[site][i].dcWidth + ' x ' + d[site][i].dcLength + ' - ' + d[site][i].sTypeName + '</span><br>')
+                            .data({
+                                push: d[site][i].dcPushRate,
+                                pp: pp,
+                                allIn: pp+d[site][i].dcPushRate,
+                                nextAvail: d[site][i].sUnitName_FirstAvailable
+                                
+                            })
+                            .append('<span class="unit-size"><span class="rate tooltip"><span class="tooltiptext">Web-visible rate: $'+d[site][i].dcPushRate+'<br>Protection: $'+pp+'<br>All-in: $'+(d[site][i].dcPushRate + pp)+'<br><br>'+eStr+'</span>$ ' + (d[site][i].dcPushRate + pp) + '</span> - ' + d[site][i].dcWidth + ' x ' + d[site][i].dcLength + ' - ' + d[site][i].sTypeName + '</span><br>')
                             .append('<span class="special">' + d[site][i].bestDiscount + '</span><br>')
-                            .append('<span class="unit-avail">Available: <span class="vacant">'+(d[site][i].iTotalVacant - d[site][i].iTotalReserved) + '</span> / '+d[site][i].iTotalUnits + eStr+'</span><br><span class="occupancy-outer">Occupancy: <span class="occupancy-inner">'+occ+ '</span>%</span>').appendTo(d2); //this adds the bulk of the dom data for each unit type for each store
+                            .append('<span class="unit-avail">Available: <span class="vacant">'+(d[site][i].iTotalVacant - d[site][i].iTotalReserved) + '</span> / '+d[site][i].iTotalUnits +'</span><br><span class="occupancy-outer">Occupancy: <span class="occupancy-inner">'+occ+ '</span>%</span>').appendTo(d2); //this adds the bulk of the dom data for each unit type for each store
                         
                         if(options.showStandard){
                             $(tDiv).append('<br><span class="std-rate">Standard rate: $'+d[site][i].dcStdRate+'</span>');

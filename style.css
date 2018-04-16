@@ -162,3 +162,26 @@ span.critical-vacancy{
 #refresh{
 	color: blue !important;
 }
+.tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 305px;
+    background-color: rgba(0,0,0,0.8);
+    color: #fff;
+    text-align: left;
+    border-radius: 6px;
+    padding: 10px;
+    position: absolute;
+    z-index: 1;
+    top: 35px;
+    font-size: 22px !important;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+}
