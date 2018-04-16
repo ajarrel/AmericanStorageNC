@@ -160,13 +160,15 @@ function parseRatesData(d){
                 d[site] = sortRates(d[site], "dcArea", /[0-9]+/); //sort each sub array by the "dcArea" property, filter out any numeric keys
 
                 for(var i in d[site]){ //subloop through the properties of each parent site
-                    if( /[0-9]+/.test(i) ){ //test for i is an integer
-                        if(options.addPushRate){ //test options.addPushrate
-                            d[site][i].dcPushRate += (/Park/.test(d[site][i].sTypeName)) ? 0 : 12; //test type for parking. If Parking space, add 0, if not, add 12 to rate
+                    if( /[0-9]+/.test(i) ){ //test for i is an integer BC integer property names are unit type fields. Named properties are meta-data
+                        
+                        if(options.addProtection){ //test options.addPushrate
+                            d[site][i].dcPushRate += (/Park/i.test(d[site][i].sTypeName)) ? 0 : 12; //test type for parking. If Parking space, add 0, if not, add 12 to rate
                         }//no need for else case because dcPushRate is good as-is
                         
                         var eStr = ''; //null string for case where options.showReserved = false OR none reserved
                         var occ = round(d[site][i].occupancyPercent,1); //set default occupancy calc for unit Types
+                        
                         if(options.showReserved && d[site][i].iTotalReserved > 0){ //test option and if any are reserved
                             eStr = ' (Vac: '+d[site][i].iTotalVacant+' - Resv: '+d[site][i].iTotalReserved+' = Avail: '+(d[site][i].iTotalVacant - d[site][i].iTotalReserved)+')'; //string to append to DOM in tDiv assignment below
                             occ = round(d[site][i].occupancyWithReserved,1) //modified occ% calc for unit type with reservations and option set
