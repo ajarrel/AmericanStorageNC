@@ -151,7 +151,10 @@ function parseRatesData(d){
 		
 		for(var site in d){ //iterate through each of the physical stores
             if( site !== "hash" ){ // only run on the stores, not the meta properties (i.e. hash)
-                var wrapper = $(document.createElement('h1')).attr('id',d[site].code).text(d[site].name +' — '+ ratings[d[site].code].rating + ' — Occ: '+round(d[site].occupancy,1)+'%'); //create the header of the (currently) 10 main divs (.cell) inside #target
+                
+                var coloring = goodOrBad(d[site].effectiveRate);
+                
+                var wrapper = $(document.createElement('h1')).attr('id',d[site].code).html(d[site].name +' — '+ ratings[d[site].code].rating + ' — Occ: '+round(d[site].occupancy,1)+'%<br>Effective rate: <span class="'+coloring+'">'+round(d[site].effectiveRate,1)+'%</span>'); //create the header of the (currently) 10 main divs (.cell) inside #target
 
                 var d2 = $(document.createElement('div'))
                         .addClass('cell')
@@ -179,6 +182,17 @@ function parseRatesData(d){
                         
                         var eStr = '+ Vacant: '+d[site][i].iTotalVacant+'<br>- Reserved: '+d[site][i].iTotalReserved+'<br>= Available: '+(d[site][i].iTotalVacant - d[site][i].iTotalReserved); //string to append to DOM in tDiv assignment below
                         var occ = round(d[site][i].occupancyPercent,1); //set default occupancy calc for unit Types
+                        d[site][i].effectiveRate = round(d[site][i].effectiveRate,1);
+                        
+                        if(d[site][i].effectiveRate > 0){
+                            var e = 'Effective rate: <span class="good">+ '+d[site][i].effectiveRate+'%</span>';
+                        }
+                        else if(d[site][i].effectiveRate < 0){
+                            var e = 'Effective rate: <span class="bad"> '+d[site][i].effectiveRate+'%</span>';
+                        }
+                        else{
+                            var e = 'Effective rate: <span>'+d[site][i].effectiveRate+'%</span>';
+                        }
                         
                         if(options.showReserved && d[site][i].iTotalReserved > 0){ //test option and if any are reserved
                             occ = round(d[site][i].occupancyWithReserved,1) //modified occ% calc for unit type with reservations and option set
@@ -193,7 +207,7 @@ function parseRatesData(d){
                                 nextAvail: d[site][i].sUnitName_FirstAvailable
                                 
                             })
-                            .append('<span class="unit-size"><span class="rate tooltip"><span class="tooltiptext">Web-visible rate: $'+d[site][i].dcPushRate+'<br>Protection: $'+pp+'<br>All-in: $'+(d[site][i].dcPushRate + pp)+'<br><br>'+eStr+'</span>$ ' + (d[site][i].dcPushRate + pp) + '</span> - ' + d[site][i].dcWidth + ' x ' + d[site][i].dcLength + ' - ' + d[site][i].sTypeName + '</span><br>')
+                            .append('<span class="unit-size"><span class="rate tooltip"><span class="tooltiptext">Web-visible rate: $'+d[site][i].dcPushRate+'<br>Protection: $'+pp+'<br>All-in: $'+(d[site][i].dcPushRate + pp)+'<br><br>'+eStr+'<br>'+e+'</span>$ ' + (d[site][i].dcPushRate + pp) + '</span> - ' + d[site][i].dcWidth + ' x ' + d[site][i].dcLength + ' - ' + d[site][i].sTypeName + '</span><br>')
                             .append('<span class="special">' + d[site][i].bestDiscount + '</span><br>')
                             .append('<span class="unit-avail">Available: <span class="vacant">'+(d[site][i].iTotalVacant - d[site][i].iTotalReserved) + '</span> / '+d[site][i].iTotalUnits +'</span><br><span class="occupancy-outer">Occupancy: <span class="occupancy-inner">'+occ+ '</span>%</span>').appendTo(d2); //this adds the bulk of the dom data for each unit type for each store
                         
@@ -450,5 +464,29 @@ function setOptions(o){ //just beginning to build a function to set options to c
     var s = JSON.stringify(o);
     localStorage.options = s;
     options = o;
+}
+function goodOrBad(val, reverseColoring = false){
+    if(reverseColoring){
+        if(val < 0){
+            return "good";
+        }
+        else if(val > 0){
+            return "bad";
+        }
+        else{
+            return "neutral";
+        }
+    }
+    else{
+        if(val > 0){
+            return "good";
+        }
+        else if(val < 0){
+            return "bad";
+        }
+        else{
+            return "neutral";
+        }
+    }
 }
 var iHtml = '<div class="review-container"><div class="pref"><span class="author"></span><span> - </span><span class="star-rating"></span><br><span class="review-time"></span></div><div class="reviewbody"></div></div>';
