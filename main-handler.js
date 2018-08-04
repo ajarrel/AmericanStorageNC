@@ -90,6 +90,9 @@ $(document).ready(function(){
 	$('#sparefoot').click(sparefoot, getRemoteData);
 	$('#website').click(website, getRemoteData);
 	$('#google-review').click(review, getRemoteGoogleData); //special handler since data comes via API instead of AJAX/IFRAME
+	$('#comp').click(function(){
+		$('#target').empty().append('<img height="1382" width="1571" src="img/comps.png" alt="Table with a list of comps"></img>');
+	});
 	
     $('button.category').not('#pricing').click(function(){ //anytime a button OTHER than Website Prices is clicked, check to see if ratesInterval is set. If it is, clearInterval
 		if(ratesInterval){
@@ -226,13 +229,13 @@ function parseRatesData(d){
 			var intVal = parseInt(this.innerText);
 			
 			if(intVal >= 90){ //if occupancy > 90, addClass good and add a check mark at the beginning
-				$(this).parent().addClass('good').prepend("✔");
+				$(this).parent().addClass('good').prepend("âœ”");
 			}
 			else if(intVal >= 80 && intVal < 90){ //the rest of these cases should make sense in the context of the first case
-				$(this).parent().addClass('ok').prepend("⚠");
+				$(this).parent().addClass('ok').prepend("âš ");
 			}
 			else{
-				$(this).parent().addClass('bad').prepend("❌");
+				$(this).parent().addClass('bad').prepend("âŒ");
 			}
 		});
         
@@ -276,7 +279,7 @@ function getRemoteData(e){ //deprecated function that only handles Website butto
 
 		var deferred = new $.Deferred();
 		
-		var wrapper = $(document.createElement('h1')).attr('id',e.data[i].site).text(e.data[i].site +' — '+ e.data[i].rating); //moved outside IF
+		var wrapper = $(document.createElement('h1')).attr('id',e.data[i].site).text(e.data[i].site +' â€” '+ e.data[i].rating); //moved outside IF
 		
 		if (e.data[i].type === 'ajax' && e.data[i].uri){
 			$.get(e.data[i].uri, [], function(d){
@@ -335,7 +338,7 @@ function getRemoteGoogleData(e){
 	
 	$(e.data).each(function(i){
 		
-		var wrapper = $(document.createElement('h1')).attr('id',e.data[i].site).text(e.data[i].site + ' — ' + e.data[i].rating);
+		var wrapper = $(document.createElement('h1')).attr('id',e.data[i].site).text(e.data[i].site + ' â€” ' + e.data[i].rating);
 		var pDom = $(document.createElement('div')).addClass('cell');
 		
 		$(e.data[i].gmap.reviews).each(function(){ //loops through each site's 5 reviews pulled from Google's API
