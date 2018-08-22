@@ -107,12 +107,12 @@ $(document).ready(function(){
     
     if(localStorage.getItem("options") === null){ //init options. test if set before setting to default values
         var opts = {
-            addProtection: true,
+            addProtection: false,
             showPush: true,
-            showStandard: false,
+            showStandard: true,
             showReserved: true,
             showAllUnitTypes: false,
-            showNextAvailUnit: false
+            showNextAvailUnit: true
         };
         localStorage.options = JSON.stringify(opts); //store in localStorage as a JSON string. Use JSON.parse(localStorage.options) to retrieve JSON obj
         options = opts;
@@ -156,8 +156,14 @@ function parseRatesData(d){
             if( site !== "hash" ){ // only run on the stores, not the meta properties (i.e. hash)
                 
                 var coloring = goodOrBad(d[site].effectiveRate);
+				var secColor = goodOrBad(d[site].occBySize - d[site].occupancy);
+				var ttip1 = '<span class="tooltiptext mod-ttip">Physical Occupancy</span>';
+				var ttip2 = '<span class="tooltiptext mod-ttip">Occupancy by Area<br>*(occupied area / total rentable area)</span>';
                 
-                var wrapper = $(document.createElement('h1')).attr('id',d[site].code).html(d[site].name +' — '+ ratings[d[site].code].rating + ' — Occ: '+round(d[site].occupancy,1)+'%<br>Effective rate: <span class="'+coloring+'">'+round(d[site].effectiveRate,1)+'%</span>'); //create the header of the (currently) 10 main divs (.cell) inside #target
+                var wrapper = $(document.createElement('h1')).attr('id',d[site].code).html(d[site].name +' '+ ratings[d[site].code].rating +
+							   ' Occ: <span id="phys-occupancy" class="tooltip">'+round(d[site].occupancy,1)+ttip1+
+							   '%</span> / <span id="size-occupancy" class="tooltip '+secColor+'">'+round(d[site].occBySize,1)+ttip2+
+							   '%</span><br>Effective rate: <span class="'+coloring+'">'+round(d[site].effectiveRate,1)+'%</span>'); //create the header of the (currently) 10 main divs (.cell) inside #target
 
                 var d2 = $(document.createElement('div'))
                         .addClass('cell')
@@ -229,13 +235,13 @@ function parseRatesData(d){
 			var intVal = parseInt(this.innerText);
 			
 			if(intVal >= 90){ //if occupancy > 90, addClass good and add a check mark at the beginning
-				$(this).parent().addClass('good').prepend("âœ”");
+				$(this).parent().addClass('good').prepend("✔");
 			}
 			else if(intVal >= 80 && intVal < 90){ //the rest of these cases should make sense in the context of the first case
-				$(this).parent().addClass('ok').prepend("âš ");
+				$(this).parent().addClass('ok').prepend("➖");
 			}
 			else{
-				$(this).parent().addClass('bad').prepend("âŒ");
+				$(this).parent().addClass('bad').prepend("❌");
 			}
 		});
         
@@ -245,7 +251,6 @@ function getRatesData(useCache = false){ //useCache defaults to false, which mea
 	
 	
     if(useCache){ //useCache is a boolean flag. True means load from localStorage.cache (via JSON.parse)
-        console.log("Cache set to true, pulling data from cache");
         if( $("div.row").length > 1){
             //Only update time as DOM is already in place and data is current
             dataRefreshTime();
