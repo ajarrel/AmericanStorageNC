@@ -134,6 +134,8 @@ function pollChanges(){ //core function that checks for changes to data and sycn
     $.getJSON("http://excessofc.gotdns.org/s/hash.json", function(d){ //get the rates object from the server
         if( d.hash === localStorage.hash ){ //if data is retrieved and hash from server === hash from localStorage, call getRatesData(false) to tell that function to use the local cached object to build the dom from instead. hash.json on the server is just an object in format { hash: HASHVALUEGOESHERE }. This is to minimize server load
             
+			$('#offline').remove();//remove this elem if it exists
+			
             if(localStorage.getItem('cache') === null){ //if cache doesn't exist, then call getRatesData with "false" --- this should be a rare first-run bug
                 getRatesData(false);
             }
@@ -146,7 +148,12 @@ function pollChanges(){ //core function that checks for changes to data and sycn
             console.log("Polled changes, hash mismatch, updating rates. Local hash: "+localStorage.hash+" -- remote hash: "+d.hash);
             getRatesData(false);
         }
-    });
+    }).fail(function(){
+		$('#offline').remove();
+		$("body").prepend('<span id="offline">Server may be offline. Click refresh to try again or contact AJ. Rates & availability below is cached and may be outdated</span>');
+		getRatesData(true);
+		
+	});
 }
 function parseRatesData(d){
     d = sortRates(d, "order", /L[0-9]{2,3}A?/); //sort rates, d is the obj to sort, "order" is the key to sort by, and the last is a regex to filter out keys from sorting
@@ -257,20 +264,32 @@ function getRatesData(useCache = false){ //useCache defaults to false, which mea
         }
         else{
             //else populate page with data from cache
+			saveScrollLocations();
             $("#target").empty();
             parseRatesData(JSON.parse(localStorage.cache));
+			restoreScrollLocations();
         }
     }
     else{ //else case means useCache === false, so clear #target and pull new data from server
-        $("#target").empty();
+        
         console.log("Cache set to false, pulling data from server");
         $.getJSON("http://excessofc.gotdns.org/s/rates.json", function(d){
-            
+			
+			saveScrollLocations();
+        	
+			$("#target").empty(); //moved inside the success handler
+			$('#offline').remove(); //remove if it exists
+			
             parseRatesData(d); //once data download is done, build dom via call to parseRatesData and pass it the JSON obj returned from server
             localStorage.lastRefresh = prettyTime(); //store a pretty string of the current time in localStorage.lastRefresh
             localStorage.cache = JSON.stringify(d); //update cache 
+			
+			restoreScrollLocations();
 
-        });
+        }).fail(function(){
+			$('#offline').remove();
+			$("body").prepend('<span id="offline">Server may be offline. Click refresh to try again or contact AJ. Rates & availability below is cached and may be outdated</span>');
+		});
     }
 }
 
@@ -497,4 +516,36 @@ function goodOrBad(val, reverseColoring = false){
         }
     }
 }
+
+function saveScrollLocations(){
+	var o = { };
+	o.window = [window.scrollX, window.scrollY];
+	o.cells = [];
+	var i;
+	
+	
+	var cells = document.getElementsByClassName('cell');
+	for(i = 0; i < cells.length; i++){
+		o.cells.push( [cells[i].scrollLeft, cells[i].scrollTop] );
+	}
+	
+	localStorage.scrollPositions = JSON.stringify(o);
+}
+
+function restoreScrollLocations(){
+	if(localStorage.scrollPositions){
+		
+		var o = JSON.parse(localStorage.scrollPositions);
+		
+		window.scrollTo(o.window[0], o.window[1]);
+		var i;
+		
+		var cells = document.getElementsByClassName('cell');
+		
+		for(i = 0; i < o.cells.length; i++){
+			cells[i].scrollTo(o.cells[i][0], o.cells[i][1]);
+		}
+	}
+}
+
 var iHtml = '<div class="review-container"><div class="pref"><span class="author"></span><span> - </span><span class="star-rating"></span><br><span class="review-time"></span></div><div class="reviewbody"></div></div>';
