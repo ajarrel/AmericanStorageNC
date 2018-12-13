@@ -161,7 +161,6 @@ function parseRatesData(d){
 		
 		for(var site in d){ //iterate through each of the physical stores
             if( site !== "hash" ){ // only run on the stores, not the meta properties (i.e. hash)
-				console.log(site);
                 
                 var coloring = goodOrBad(d[site].effectiveRate);
 				var secColor = goodOrBad(d[site].occBySize - d[site].occupancy);
@@ -282,7 +281,7 @@ function getRatesData(useCache = false){ //useCache defaults to false, which mea
 			$('#offline').remove(); //remove if it exists
 			
 			
-			console.warn(d);
+			//console.warn(d);
 			//localStorage.debugStorage = d;
             parseRatesData(d); //once data download is done, build dom via call to parseRatesData and pass it the JSON obj returned from server
             localStorage.lastRefresh = prettyTime(); //store a pretty string of the current time in localStorage.lastRefresh
