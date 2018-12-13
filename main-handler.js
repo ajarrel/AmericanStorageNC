@@ -161,6 +161,7 @@ function parseRatesData(d){
 		
 		for(var site in d){ //iterate through each of the physical stores
             if( site !== "hash" ){ // only run on the stores, not the meta properties (i.e. hash)
+				console.log(site);
                 
                 var coloring = goodOrBad(d[site].effectiveRate);
 				var secColor = goodOrBad(d[site].occBySize - d[site].occupancy);
@@ -178,60 +179,60 @@ function parseRatesData(d){
 
                 d[site] = sortRates(d[site], "dcArea", /[0-9]+/); //sort each sub array by the "dcArea" property, filter out any numeric keys
 
-                for(var i in d[site]){ //subloop through the properties of each parent site
-                    if( /[0-9]+/.test(i) ){ //test for i is an integer BC integer property names are unit type fields. Named properties are meta-data
+                for(var i2 in d[site]){ //subloop through the properties of each parent site
+                    if( /[0-9]+/.test(i2) && d[site].hasOwnProperty(i2) && d[site][i2].hasOwnProperty("effectiveRate") ){ //test for i is an integer BC integer property names are unit type fields. Named properties are meta-data
                         
                         var pp = 0;
                         var rateStr = '';
                         if(options.addProtection){ //test options.addPushrate
-                            pp = (/Park/i.test(d[site][i].sTypeName)) ? 0 : 12; //test type for parking. If Parking space, add 0, if not, add 12 to rate
-                            var allIn = pp + d[site][i].dcPushRate;
+                            pp = (/Park/i.test(d[site][i2].sTypeName)) ? 0 : 12; //test type for parking. If Parking space, add 0, if not, add 12 to rate
+                            var allIn = pp + d[site][i2].dcPushRate;
                             if(!pp){ //if pp !== true (0 = false) then push rate Str is good as is
-                                rateStr = d[site][i].dcPushRate;
+                                rateStr = d[site][i2].dcPushRate;
                             }
                             else{ //else make a pretty explanation of how the all-in price works
-                                rateStr = d[site][i].dcPushRate + ' $'+pp+' = '+(d[site][i].dcPushRate+pp);
+                                rateStr = d[site][i2].dcPushRate + ' $'+pp+' = '+(d[site][i2].dcPushRate+pp);
                             }
                             
                         }
 
                         
-                        var eStr = '+ Vacant: '+d[site][i].iTotalVacant+'<br>- Reserved: '+d[site][i].iTotalReserved+'<br>= Available: '+(d[site][i].iTotalVacant - d[site][i].iTotalReserved); //string to append to DOM in tDiv assignment below
-                        var occ = round(d[site][i].occupancyPercent,1); //set default occupancy calc for unit Types
-                        d[site][i].effectiveRate = round(d[site][i].effectiveRate,1);
+                        var eStr = '+ Vacant: '+d[site][i2].iTotalVacant+'<br>- Reserved: '+d[site][i2].iTotalReserved+'<br>= Available: '+(d[site][i2].iTotalVacant - d[site][i2].iTotalReserved); //string to append to DOM in tDiv assignment below
+                        var occ = round(d[site][i2].occupancyPercent,1); //set default occupancy calc for unit Types
+                        d[site][i2].effectiveRate = round(parseFloat(d[site][i2].effectiveRate),1);
                         
-                        if(d[site][i].effectiveRate > 0){
-                            var e = 'Effective rate: <span class="good">+ '+d[site][i].effectiveRate+'%</span>';
+                        if(d[site][i2].effectiveRate > 0){
+                            var e = 'Effective rate: <span class="good">+ '+d[site][i2].effectiveRate+'%</span>';
                         }
-                        else if(d[site][i].effectiveRate < 0){
-                            var e = 'Effective rate: <span class="bad"> '+d[site][i].effectiveRate+'%</span>';
+                        else if(d[site][i2].effectiveRate < 0){
+                            var e = 'Effective rate: <span class="bad"> '+d[site][i2].effectiveRate+'%</span>';
                         }
                         else{
-                            var e = 'Effective rate: <span>'+d[site][i].effectiveRate+'%</span>';
+                            var e = 'Effective rate: <span>'+d[site][i2].effectiveRate+'%</span>';
                         }
                         
-                        if(options.showReserved && d[site][i].iTotalReserved > 0){ //test option and if any are reserved
-                            occ = round(d[site][i].occupancyWithReserved,1) //modified occ% calc for unit type with reservations and option set
+                        if(options.showReserved && d[site][i2].iTotalReserved > 0){ //test option and if any are reserved
+                            occ = round(d[site][i2].occupancyWithReserved,1) //modified occ% calc for unit type with reservations and option set
                         }
 
                         var tDiv = $(document.createElement('div'))
                             .addClass('row')
                             .data({
-                                push: d[site][i].dcPushRate,
+                                push: d[site][i2].dcPushRate,
                                 pp: pp,
-                                allIn: pp+d[site][i].dcPushRate,
-                                nextAvail: d[site][i].sUnitName_FirstAvailable
+                                allIn: pp+d[site][i2].dcPushRate,
+                                nextAvail: d[site][i2].sUnitName_FirstAvailable
                                 
                             })
-                            .append('<span class="unit-size"><span class="rate tooltip"><span class="tooltiptext">Web-visible rate: $'+d[site][i].dcPushRate+'<br>Protection: $'+pp+'<br>All-in: $'+(d[site][i].dcPushRate + pp)+'<br><br>'+eStr+'<br>'+e+'</span>$ ' + (d[site][i].dcPushRate + pp) + '</span> - ' + d[site][i].dcWidth + ' x ' + d[site][i].dcLength + ' - ' + d[site][i].sTypeName + '</span><br>')
-                            .append('<span class="special">' + d[site][i].bestDiscount + '</span><br>')
-                            .append('<span class="unit-avail">Available: <span class="vacant">'+(d[site][i].iTotalVacant - d[site][i].iTotalReserved) + '</span> / '+d[site][i].iTotalUnits +'</span><br><span class="occupancy-outer">Occupancy: <span class="occupancy-inner">'+occ+ '</span>%</span>').appendTo(d2); //this adds the bulk of the dom data for each unit type for each store
+                            .append('<span class="unit-size"><span class="rate tooltip"><span class="tooltiptext">Web-visible rate: $'+d[site][i2].dcPushRate+'<br>Protection: $'+pp+'<br>All-in: $'+(d[site][i2].dcPushRate + pp)+'<br><br>'+eStr+'<br>'+e+'</span>$ ' + (d[site][i2].dcPushRate + pp) + '</span> - ' + d[site][i2].dcWidth + ' x ' + d[site][i2].dcLength + ' - ' + d[site][i2].sTypeName + '</span><br>')
+                            .append('<span class="special">' + d[site][i2].bestDiscount + '</span><br>')
+                            .append('<span class="unit-avail">Available: <span class="vacant">'+(d[site][i2].iTotalVacant - d[site][i2].iTotalReserved) + '</span> / '+d[site][i2].iTotalUnits +'</span><br><span class="occupancy-outer">Occupancy: <span class="occupancy-inner">'+occ+ '</span>%</span>').appendTo(d2); //this adds the bulk of the dom data for each unit type for each store
                         
                         if(options.showStandard){
-                            $(tDiv).append('<br><span class="std-rate">Standard rate: $'+d[site][i].dcStdRate+'</span>');
+                            $(tDiv).append('<br><span class="std-rate">Standard rate: $'+d[site][i2].dcStdRate+'</span>');
                         }
                         if(options.showNextAvailUnit){
-                            $(tDiv).append('<br><span class="next-avail">Next availble: '+d[site][i].sUnitName_FirstAvailable+'</span>');
+                            $(tDiv).append('<br><span class="next-avail">Next availble: '+d[site][i2].sUnitName_FirstAvailable+'</span>');
                         }
                     }
                 }
@@ -280,6 +281,9 @@ function getRatesData(useCache = false){ //useCache defaults to false, which mea
 			$("#target").empty(); //moved inside the success handler
 			$('#offline').remove(); //remove if it exists
 			
+			
+			console.warn(d);
+			//localStorage.debugStorage = d;
             parseRatesData(d); //once data download is done, build dom via call to parseRatesData and pass it the JSON obj returned from server
             localStorage.lastRefresh = prettyTime(); //store a pretty string of the current time in localStorage.lastRefresh
             localStorage.cache = JSON.stringify(d); //update cache 
