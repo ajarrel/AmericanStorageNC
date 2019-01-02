@@ -6,7 +6,7 @@
 	
 	"manifest_version": 2,
 	"name": "American Self Storage Helper",
-	"version": "1.303",
+	"version": "1.401",
 	
 	"description": "A helpful tool for American Self Storage employees",
 	
@@ -29,7 +29,13 @@
 		"default_title": "Open Rates Page",
 		"default_popup": "popup.html"
 	},
+    
+    "content_scripts": [{
+        "matches": ["https://myhub.smdservers.net/CAVJ*MakePayment*"],
+        "js": ["jquery.js", "myhub.js"],
+        "run_at": "document_idle"
+    }],
 	
-	"content_security_policy": "script-src 'self' https://maps.googleapis.com/; object-src 'self'"
+	"content_security_policy": "script-src 'self' https://maps.googleapis.com/ https://inside.americanstoragenc.com/*; object-src 'self'"
 	
 }
