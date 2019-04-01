@@ -29,14 +29,14 @@ if(urlParams.has('TenantId') && urlParams.has('LedgerId')){
         
         aj.years = Math.round(((aj.now.getTime() - aj.oldest.getTime()) / 3.154e+10)*100) / 100;
         
-        if(aj.years > 1){
+        if(aj.years > 1.616){
             
             $('div.page-title').parent().css("width", "90%");
             
             $(document.createElement('div'))
             .attr('id', 'aj-title')
             .addClass('aj-emphasis')
-            .text("This is a great customer and they've stored with us "+aj.years+" years")
+            .text("This is a great customer and they've stored with us "+aj.years+" years (avg cust stores 1.6 years)")
             .css({
                 fontSize: "18px",
                 fontWeight: "bold",
