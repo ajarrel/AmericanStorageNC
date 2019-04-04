@@ -568,14 +568,14 @@ function listChannel(token, opt = {excludeArchived: true, privateChannel: true }
         uri += '&exclude_archived=true';
     }
     else{
-        uri += '&exclude_archived=true';
+        uri += '&exclude_archived=false';
     }
     
     if(opt.privateChannel){
         uri += '&private_channel=true';
     }
     else{
-        uri += '&private_channel=true';
+        uri += '&private_channel=false';
     }
     
 	fetch("https://slack.com/api/conversations.list?token="+token+"&exclude_archived=true&types=private_channel")
