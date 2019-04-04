@@ -561,6 +561,32 @@ function lookUpUser(token){
 	});
 }
 
+function listChannel(token, opt = {excludeArchived: true, privateChannel: true }){
+    var uri = 'https://slack.com/api/conversations.list?token='+token;
+    
+    if(opt.excludeArchived){
+        uri += '&exclude_archived=true';
+    }
+    else{
+        uri += '&exclude_archived=true';
+    }
+    
+    if(opt.privateChannel){
+        uri += '&private_channel=true';
+    }
+    else{
+        uri += '&private_channel=true';
+    }
+    
+	fetch("https://slack.com/api/conversations.list?token="+token+"&exclude_archived=true&types=private_channel")
+	.then(function(response){
+		return response.json();
+	})
+	.then(function(mJson){
+		console.log(mJson);
+	});
+}
+
 function processWp(wp){
 	var req = "https://proapi.whitepages.com/3.3/identity_check";
 	var key = "eb901e58d95e4533b1784e3dce21f7df";
