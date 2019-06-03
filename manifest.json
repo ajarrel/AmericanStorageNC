@@ -6,7 +6,7 @@
 	
 	"manifest_version": 2,
 	"name": "American Self Storage Helper",
-	"version": "1.404",
+	"version": "1.405",
 	
 	"description": "A helpful tool for American Self Storage employees",
 	
@@ -31,7 +31,7 @@
 	},
     
     "content_scripts": [{
-        "matches": ["https://myhub.smdservers.net/CAVJ*MakePayment*"],
+        "matches": ["https://myhub.smdservers.net/CAVJ*"],
         "js": ["jquery.js", "myhub.js"],
         "run_at": "document_idle"
     }],

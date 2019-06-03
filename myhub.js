@@ -5,6 +5,10 @@ var aj = {
     now: new Date()
 };
 
+setInterval(function(){
+    $('div#divSessionTimeout button:contains("Continue")').click();
+}, 1000*60*8);
+
 if(urlParams.has('TenantId') && urlParams.has('LedgerId')){
     
     var lCode = /L(01|00)(A|[0-9])/.exec(location.href)[0];
