@@ -5,9 +5,31 @@ var aj = {
     now: new Date()
 };
 
-setInterval(function(){
-    $('div#divSessionTimeout button:contains("Continue")').click();
-}, 1000*60*8);
+
+
+var s = document.createElement('script');
+s.setAttribute('type','Text/Javascript');
+
+s.innerHTML = `function manuallyResetLogoutTimers(){ 
+    console.warn('Running a hack-a-round refresh per AJ');
+    resetTimer(); 
+    resetAutoLogoutTimer(); 
+    startTimer(); 
+    $.post("/RefreshSession", function(data){
+        //convert timeout to milliseconds
+        if (data.sessionRefreshed) {
+            console.log("Session Renewed At User Request");
+            resetTimer();
+            resetAutoLogoutTimer();
+            startTimer();
+        }
+    });
+}
+var ajInterval = setInterval(manuallyResetLogoutTimers, 1000*60*8);
+defaultTimeoutInMinutes = 300;`;
+
+document.getElementsByTagName('head')[0].append(s);
+
 
 if(urlParams.has('TenantId') && urlParams.has('LedgerId')){
     
